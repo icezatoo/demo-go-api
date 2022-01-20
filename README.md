@@ -4,10 +4,10 @@
 
 ```bash
 # 1. Clone the repository or click on "Use this template" button.
-git clone https://github.com/devlorz/pea-cpm.git
+git clone https://github.com/icezatoo/demo-go-api
 
 # 2. Enter your newly-cloned folder.
-cd pea-cpm
+cd demo-go-api
 
 # 3. Run
 go run main.go
