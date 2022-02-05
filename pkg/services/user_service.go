@@ -1,12 +1,12 @@
 package services
 
 import (
-	"github.com/icezatoo/demo-go-api/pkg/entities"
+	dto "github.com/icezatoo/demo-go-api/pkg/dto/user"
 	"github.com/icezatoo/demo-go-api/pkg/repositories"
 )
 
 type UserService interface {
-	GetUsers() ([]*entities.EntityUsers, error)
+	GetUsers() ([]*dto.UserReponse, error)
 }
 
 type userService struct {
@@ -17,6 +17,19 @@ func NewUserService(repo repositories.UserRepository) *userService {
 	return &userService{repo}
 }
 
-func (u *userService) GetUsers() ([]*entities.EntityUsers, error) {
-	return u.repo.GetUsers()
+func (u *userService) GetUsers() ([]*dto.UserReponse, error) {
+	var usersDto []*dto.UserReponse
+	users, err := u.repo.GetUsers()
+
+	for _, user := range users {
+		usersDto = append(usersDto, &dto.UserReponse{
+			ID:       user.ID,
+			FullName: user.FullName,
+			LastName: user.LastName,
+			Email:    user.Email,
+			Enabled:  user.Enabled,
+		})
+	}
+
+	return usersDto, err
 }
