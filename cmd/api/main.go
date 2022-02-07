@@ -6,27 +6,28 @@ import (
 	helmet "github.com/danielkov/gin-helmet"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	config "github.com/icezatoo/demo-go-api/configs"
-	route "github.com/icezatoo/demo-go-api/routes"
-	"github.com/icezatoo/demo-go-api/utils"
+	"github.com/icezatoo/demo-go-api/pkg/config"
+	"github.com/icezatoo/demo-go-api/pkg/routers"
+	"github.com/icezatoo/demo-go-api/pkg/utils"
 )
 
 func main() {
 
 	router := SetupRouter()
-
-	log.Fatal(router.Run(":" + utils.GodotEnv("GO_PORT")))
+	log.Fatal(router.Run(":" + utils.GetConfigByKey("GO_PORT")))
 }
 
 func SetupRouter() *gin.Engine {
+
+	utils.LoadConfig()
 
 	db := config.Connection()
 
 	router := gin.Default()
 
-	if utils.GodotEnv("GO_ENV") != "production" && utils.GodotEnv("GO_ENV") != "test" {
+	if utils.GetConfigByKey("GO_ENV") != "production" && utils.GetConfigByKey("GO_ENV") != "test" {
 		gin.SetMode(gin.DebugMode)
-	} else if utils.GodotEnv("GO_ENV") == "test" {
+	} else if utils.GetConfigByKey("GO_ENV") == "test" {
 		gin.SetMode(gin.TestMode)
 	} else {
 		gin.SetMode(gin.ReleaseMode)
@@ -38,13 +39,10 @@ func SetupRouter() *gin.Engine {
 		AllowHeaders:  []string{"*"},
 		AllowWildcard: true,
 	}))
+
 	router.Use(helmet.Default())
 
-	/**
-	@description Init All Route
-	*/
-	route.InitUserRoutes(db, router)
-	route.InitAuthRoutes(db, router)
+	routers.InitUserRoutes(db, router)
 
 	return router
 }
