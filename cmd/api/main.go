@@ -1,54 +1,48 @@
 package main
 
-import "github.com/gin-gonic/gin"
+import (
+	"log"
 
-type Response struct {
-	StatusCode int    `json:"statusCode"`
-	Message    string `json:"message"`
-}
+	helmet "github.com/danielkov/gin-helmet"
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
+	"github.com/icezatoo/demo-go-api/pkg/config"
+	"github.com/icezatoo/demo-go-api/pkg/routers"
+	"github.com/icezatoo/demo-go-api/pkg/utils"
+)
 
 func main() {
 
-	r := gin.Default()
-
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, Response{StatusCode: 200, Message: "Test"})
-	})
-	r.Run()
-
-	// EntityUsers
-
-	// router := SetupRouter()
-	// log.Fatal(router.Run(":" + utils.GodotEnv("GO_PORT")))
+	router := SetupRouter()
+	log.Fatal(router.Run(":" + utils.GetConfigByKey("GO_PORT")))
 }
 
-// func SetupRouter() *gin.Engine {
+func SetupRouter() *gin.Engine {
 
-// 	db := config.Connection()
+	utils.LoadConfig()
 
-// 	router := gin.Default()
+	db := config.Connection()
 
-// 	if utils.GodotEnv("GO_ENV") != "production" && utils.GodotEnv("GO_ENV") != "test" {
-// 		gin.SetMode(gin.DebugMode)
-// 	} else if utils.GodotEnv("GO_ENV") == "test" {
-// 		gin.SetMode(gin.TestMode)
-// 	} else {
-// 		gin.SetMode(gin.ReleaseMode)
-// 	}
+	router := gin.Default()
 
-// 	router.Use(cors.New(cors.Config{
-// 		AllowOrigins:  []string{"*"},
-// 		AllowMethods:  []string{"*"},
-// 		AllowHeaders:  []string{"*"},
-// 		AllowWildcard: true,
-// 	}))
-// 	router.Use(helmet.Default())
+	if utils.GetConfigByKey("GO_ENV") != "production" && utils.GetConfigByKey("GO_ENV") != "test" {
+		gin.SetMode(gin.DebugMode)
+	} else if utils.GetConfigByKey("GO_ENV") == "test" {
+		gin.SetMode(gin.TestMode)
+	} else {
+		gin.SetMode(gin.ReleaseMode)
+	}
 
-// 	/**
-// 	@description Init All Route
-// 	*/
-// 	route.InitUserRoutes(db, router)
-// 	route.InitAuthRoutes(db, router)
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:  []string{"*"},
+		AllowMethods:  []string{"*"},
+		AllowHeaders:  []string{"*"},
+		AllowWildcard: true,
+	}))
 
-// 	return router
-// }
+	router.Use(helmet.Default())
+
+	routers.InitUserRoutes(db, router)
+
+	return router
+}

@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 
+	"github.com/icezatoo/demo-go-api/pkg/entities"
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -26,6 +27,14 @@ func Connection() *gorm.DB {
 
 	if os.Getenv("GO_ENV") != "production" {
 		logrus.Info("Connection to Database Successfully")
+	}
+
+	err = db.AutoMigrate(
+		&entities.EntityUsers{},
+	)
+
+	if err != nil {
+		logrus.Fatal(err.Error())
 	}
 
 	return db
