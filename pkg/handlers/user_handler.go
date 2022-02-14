@@ -46,6 +46,7 @@ func (u *UserHandler) GetUser(c *gin.Context) {
 			return
 		}
 		c.JSON(http.StatusBadRequest, dto.ResponseError{StatusCode: http.StatusBadRequest, Errors: "Bad request"})
+		return
 	}
 
 	user, err := u.service.GetUser(&request)
