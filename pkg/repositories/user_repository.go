@@ -12,6 +12,7 @@ type UserRepository interface {
 	GetUsers() ([]*entities.EntityUsers, error)
 	GetUser(request *dto.RequestGetUser) (*entities.EntityUsers, error)
 	CreateUser(request *dto.CreateUserRequest) (*entities.EntityUsers, error)
+	UpdateUser(request *dto.UpdateUserRequest) (*entities.EntityUsers, error)
 	DeleteUser(request *dto.RequestDeleteUser) error
 }
 
@@ -34,7 +35,7 @@ func (repo *repository) GetUsers() ([]*entities.EntityUsers, error) {
 func (repo *repository) GetUser(request *dto.RequestGetUser) (*entities.EntityUsers, error) {
 	var user entities.EntityUsers
 
-	err := repo.db.First(&user, request.ID).Error
+	err := repo.db.First(&user, "id = ?", request.ID).Error
 
 	return &user, err
 }
@@ -59,6 +60,25 @@ func (repo *repository) CreateUser(request *dto.CreateUserRequest) (*entities.En
 	return &user, err
 }
 
+func (repo *repository) UpdateUser(request *dto.UpdateUserRequest) (*entities.EntityUsers, error) {
+	var user entities.EntityUsers
+	result := repo.db.Select("*").Where("id = ?", request.ID).Find(&user)
+
+	if result.RowsAffected < 1 {
+		return &user, errors.New("USER_NOT_FOUND_404")
+	}
+
+	user.FullName = request.FullName
+	user.Email = request.Email
+	user.LastName = request.LastName
+	user.Enabled = request.Enabled
+
+	err := repo.db.Updates(&user).Error
+
+	return &user, err
+
+}
+
 func (repo *repository) DeleteUser(request *dto.RequestDeleteUser) error {
 	var user entities.EntityUsers
 
@@ -68,7 +88,7 @@ func (repo *repository) DeleteUser(request *dto.RequestDeleteUser) error {
 		return errors.New("USER_NOT_FOUND_404")
 	}
 
-	err := repo.db.Delete(user, request.ID).Error
+	err := repo.db.Unscoped().Delete(&user, "id = ?", request.ID).Error
 
 	return err
 }

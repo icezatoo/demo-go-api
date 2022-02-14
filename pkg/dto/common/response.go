@@ -9,5 +9,5 @@ type ResponseSucessful struct {
 
 type ResponseError struct {
 	StatusCode int         `json:"statusCode"`
-	Error      interface{} `json:"error"`
+	Errors     interface{} `json:"errors"`
 }

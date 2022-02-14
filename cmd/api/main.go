@@ -14,6 +14,7 @@ import (
 func main() {
 
 	router := SetupRouter()
+
 	log.Fatal(router.Run(":" + utils.GetConfigByKey("GO_PORT")))
 }
 
