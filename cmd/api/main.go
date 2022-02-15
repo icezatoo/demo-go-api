@@ -6,8 +6,8 @@ import (
 	helmet "github.com/danielkov/gin-helmet"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/icezatoo/demo-go-api/pkg/config"
-	"github.com/icezatoo/demo-go-api/pkg/routers"
+	"github.com/icezatoo/demo-go-api/pkg/db"
+	"github.com/icezatoo/demo-go-api/pkg/deliveries/routers"
 	"github.com/icezatoo/demo-go-api/pkg/utils"
 )
 
@@ -22,7 +22,7 @@ func SetupRouter() *gin.Engine {
 
 	utils.LoadConfig()
 
-	db := config.Connection()
+	db := db.Connection()
 
 	router := gin.Default()
 
