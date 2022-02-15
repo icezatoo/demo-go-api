@@ -3,20 +3,13 @@ package repositories
 import (
 	"errors"
 
+	"github.com/icezatoo/demo-go-api/pkg/domains"
 	dto "github.com/icezatoo/demo-go-api/pkg/dto/user"
 	"github.com/icezatoo/demo-go-api/pkg/entities"
 	"gorm.io/gorm"
 )
 
-type UserRepository interface {
-	GetUsers() ([]*entities.EntityUsers, error)
-	GetUser(request *dto.RequestGetUser) (*entities.EntityUsers, error)
-	CreateUser(request *dto.CreateUserRequest) (*entities.EntityUsers, error)
-	UpdateUser(request *dto.UpdateUserRequest) (*entities.EntityUsers, error)
-	DeleteUser(request *dto.RequestDeleteUser) error
-}
-
-func NewRepositoryUser(db *gorm.DB) *repository {
+func NewUserRepository(db *gorm.DB) domains.UserRepository {
 	return &repository{db: db}
 }
 
