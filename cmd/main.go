@@ -1,48 +1,79 @@
 package main
 
-import "github.com/gin-gonic/gin"
+import (
+	"context"
+	"errors"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	helmet "github.com/danielkov/gin-helmet"
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
+	"github.com/icezatoo/demo-go-api/pkg/config"
+	"github.com/icezatoo/demo-go-api/pkg/db"
+	"github.com/icezatoo/demo-go-api/pkg/routers"
+	"github.com/sirupsen/logrus"
+)
 
 func main() {
+	config := config.LoadConfigENV()
 
-	r := gin.Default()
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
-	r.Run()
+	router := SetupRouter(config)
 
-	// router := SetupRouter()
+	srv := &http.Server{
+		Addr:    ":" + config.Port,
+		Handler: router,
+	}
 
-	// log.Fatal(router.Run(":" + utils.GetConfigByKey("GO_PORT")))
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && errors.Is(err, http.ErrServerClosed) {
+			logrus.Printf("listen: %s\n", err)
+		}
+	}()
+
+	quit := make(chan os.Signal)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	logrus.Println("Shutting down server...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		logrus.Fatal("Server forced to shutdown:", err)
+	}
+
+	logrus.Println("Server exiting")
+
 }
 
-// func SetupRouter() *gin.Engine {
+func SetupRouter(config *config.Config) *gin.Engine {
 
-// 	// utils.LoadConfig()
+	db := db.Connection(config)
 
-// 	// db := db.Connection()
+	router := gin.Default()
 
-// 	// router := gin.Default()
+	if config.Environment != "production" && config.Environment != "test" {
+		gin.SetMode(gin.DebugMode)
+	} else if config.Environment == "test" {
+		gin.SetMode(gin.TestMode)
+	} else {
+		gin.SetMode(gin.ReleaseMode)
+	}
 
-// 	// if utils.GetConfigByKey("GO_ENV") != "production" && utils.GetConfigByKey("GO_ENV") != "test" {
-// 	// 	gin.SetMode(gin.DebugMode)
-// 	// } else if utils.GetConfigByKey("GO_ENV") == "test" {
-// 	// 	gin.SetMode(gin.TestMode)
-// 	// } else {
-// 	// 	gin.SetMode(gin.ReleaseMode)
-// 	// }
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:  []string{"*"},
+		AllowMethods:  []string{"*"},
+		AllowHeaders:  []string{"*"},
+		AllowWildcard: true,
+	}))
 
-// 	// router.Use(cors.New(cors.Config{
-// 	// 	AllowOrigins:  []string{"*"},
-// 	// 	AllowMethods:  []string{"*"},
-// 	// 	AllowHeaders:  []string{"*"},
-// 	// 	AllowWildcard: true,
-// 	// }))
+	router.Use(helmet.Default())
 
-// 	// router.Use(helmet.Default())
+	routers.InitUserRoutes(db, router)
 
-// 	// routers.InitUserRoutes(db, router)
-
-// 	return router
-// }
+	return router
+}

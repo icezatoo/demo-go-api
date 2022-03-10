@@ -18,7 +18,7 @@ type UserService interface {
 	DeleteUser(request *dto.RequestDeleteUser) error
 }
 
-func NewUserUseCase(repo repository.UserRepository) *userService {
+func NewUserService(repo repository.UserRepository) *userService {
 	return &userService{repo}
 }
 
