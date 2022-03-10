@@ -4,11 +4,11 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/icezatoo/demo-go-api/pkg/utils"
+	"github.com/icezatoo/demo-go-api/pkg/utils/bcrypt"
 	"gorm.io/gorm"
 )
 
-type EntityUsers struct {
+type User struct {
 	gorm.Model
 	ID       string `gorm:"primary_key" json:"id"`
 	Enabled  bool   `gorm:"type:bool;default:true" json:"enable"`
@@ -18,18 +18,18 @@ type EntityUsers struct {
 	Password string `gorm:"password;varchar(255);unique;not null" json:"password"`
 }
 
-func (EntityUsers) TableName() string {
+func (User) TableName() string {
 	return "users"
 }
 
-func (entity *EntityUsers) BeforeCreate(tx *gorm.DB) (err error) {
+func (entity *User) BeforeCreate(tx *gorm.DB) (err error) {
 	entity.ID = uuid.New().String()
-	entity.Password = utils.HashPassword(entity.Password)
+	entity.Password = bcrypt.HashPassword(entity.Password)
 	entity.CreatedAt = time.Now().Local()
 	return nil
 }
 
-func (entity *EntityUsers) BeforeUpdate(db *gorm.DB) error {
+func (entity *User) BeforeUpdate(db *gorm.DB) error {
 	entity.UpdatedAt = time.Now().Local()
 	return nil
 }

@@ -12,10 +12,10 @@ ${BINARY_DIR}:
 	mkdir -p $(BINARY_DIR)
 
 build: ${BINARY_DIR} 
-	$(GOCMD) build -o $(BINARY_DIR) -v ./cmd/api
+	$(GOCMD) build -o $(BINARY_DIR) -v ./cmd
 
 run: 
-	$(GOCMD) run ./cmd/api
+	$(GOCMD) run ./cmd
 
 test:
 	$(GOCMD) test ./...

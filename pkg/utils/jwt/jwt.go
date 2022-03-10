@@ -1,7 +1,8 @@
-package utils
+package auth
 
 import (
 	"encoding/json"
+	"os"
 	"strings"
 	"time"
 
@@ -24,7 +25,7 @@ func Sign(Data map[string]interface{}, SecrePublicKeyEnvName string, ExpiredAt t
 
 	expiredAt := time.Now().Add(time.Duration(time.Minute) * ExpiredAt).Unix()
 
-	jwtSecretKey := GetConfigByKey(SecrePublicKeyEnvName)
+	jwtSecretKey := os.Getenv(SecrePublicKeyEnvName)
 
 	claims := jwt.MapClaims{}
 	claims["exp"] = expiredAt
@@ -47,7 +48,7 @@ func Sign(Data map[string]interface{}, SecrePublicKeyEnvName string, ExpiredAt t
 func VerifyTokenHeader(ctx *gin.Context, SecrePublicKeyEnvName string) (*jwt.Token, error) {
 	tokenHeader := ctx.GetHeader("Authorization")
 	accessToken := strings.SplitAfter(tokenHeader, "Bearer")[1]
-	jwtSecretKey := GetConfigByKey(SecrePublicKeyEnvName)
+	jwtSecretKey := os.Getenv(SecrePublicKeyEnvName)
 
 	token, err := jwt.Parse(strings.Trim(accessToken, " "), func(token *jwt.Token) (interface{}, error) {
 		return []byte(jwtSecretKey), nil
@@ -62,7 +63,7 @@ func VerifyTokenHeader(ctx *gin.Context, SecrePublicKeyEnvName string) (*jwt.Tok
 }
 
 func VerifyToken(accessToken, SecrePublicKeyEnvName string) (*jwt.Token, error) {
-	jwtSecretKey := GetConfigByKey(SecrePublicKeyEnvName)
+	jwtSecretKey := os.Getenv(SecrePublicKeyEnvName)
 	token, err := jwt.Parse(accessToken, func(token *jwt.Token) (interface{}, error) {
 		return []byte(jwtSecretKey), nil
 	})

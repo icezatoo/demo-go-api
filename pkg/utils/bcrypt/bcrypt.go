@@ -1,4 +1,4 @@
-package utils
+package bcrypt
 
 import (
 	"github.com/sirupsen/logrus"
